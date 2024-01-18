@@ -11,7 +11,7 @@ public class Application {
 
     static List<Integer> computer;
     static String cStr = "";
-    static String line = "";
+    static int num = 0;
     static String result = "";
     static boolean strikeFlag = false;
     static int strike = 0;
@@ -23,7 +23,9 @@ public class Application {
 
 
     static void checkStrikeOrBall(String userPoint, int idx) {
-        if(strike == 3) strikeFlag = true;
+        if(strike == 3) {
+            strikeFlag = true;
+        }
 
         if(idx == 0) {
             strike = 0;
@@ -100,35 +102,37 @@ public class Application {
         return flag;
     }
 
-    static void showResult() {
+    static void showResult(String line) {
         if(startGame(line)) {
             System.out.println("3개의 숫자를 모두 맞히셨습니다! 게임 종료");
             System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
-            line = readLine();
-        } else {
-            System.out.print("숫자를 입력해주세요 : ");
-            line = "";
+            String numStr = readLine();
+            num = Integer.parseInt(numStr);
         }
     }
 
     static boolean tellUser() {
-        if(StringUtils.isBlank(line)) {
-            line = readLine();
-        }
         boolean flag = true;
+        String line = "";
 
-        if(line.equals("1")) {
+        if(num == 1) {
             computer = pickUniqueNumbersInRange(1,9, STR_LENGTH);
             cStr = "";
             strikeFlag = false;
             for(int i : computer) {
                 cStr += i;
             }
-        } else if(line.equals("2")) {
+            num = 0;
+        } else if(num == 2) {
             flag = false;
-        } else {
-            showResult();
         }
+
+        if(num != 2) {
+            System.out.print("숫자를 입력해주세요 : ");
+            line = readLine();
+            showResult(line);
+        }
+
         return flag;
     }
 
@@ -145,7 +149,6 @@ public class Application {
             cStr += i;
         }
 
-        System.out.print("숫자를 입력해주세요 : ");
         while(flag) {
             flag = tellUser();
         }
