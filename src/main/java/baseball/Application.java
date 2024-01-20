@@ -7,20 +7,21 @@ import static camp.nextstep.edu.missionutils.Randoms.*;
 
 public class Application {
 
-    static List<Integer> computer;
-    static String cStr = "";
-    static int num = 0;
-    static String result = "";
-    static boolean strikeFlag = false;
-    static int strike = 0;
-    static int ball = 0;
-    final static String STRIKE_STR = "스트라이크";
-    final static String BALL_STR = "볼";
-    final static String NOTHING_STR = "낫싱";
-    final static int STR_LENGTH = 3;
+    public final static String STRIKE_STR = "스트라이크";
+    public final static String BALL_STR = "볼";
+    public final static String NOTHING_STR = "낫싱";
+    public final static int STR_LENGTH = 3;
+    static List<Integer> computerDigitList;
+    String computerNumber = "";
+    String resultPrint = "";
+    String userAnswer = "";
+    int restartAnswer = 0;
+    boolean strikeFlag = false;
+    int strike = 0;
+    int ball = 0;
 
 
-    static void checkStrikeOrBall(String userPoint, int idx) {
+    public void checkStrikeOrBall(String userPoint, int idx) {
         if(strike == 3) {
             strikeFlag = true;
         }
@@ -34,124 +35,122 @@ public class Application {
             return;
         }
 
-        String com = computer.get(idx).toString();
+        String com = computerDigitList.get(idx).toString();
         String user = Character.toString(userPoint.charAt(idx));
 
         if(com.equals(user)) {
             strike++;
         }
 
-        if(!com.equals(user) && cStr.contains(user)) {
+        if(!com.equals(user) && computerNumber.contains(user)) {
             ball++;
         }
 
         if(strike == 0) {
-            result = ball + BALL_STR;
+            resultPrint = ball + BALL_STR;
         } else if(ball == 0) {
-            result = strike + STRIKE_STR;
+            resultPrint = strike + STRIKE_STR;
         } else {
-            result = strike + STRIKE_STR + " " + ball + BALL_STR;
+            resultPrint = strike + STRIKE_STR + " " + ball + BALL_STR;
         }
 
         if(idx + 1 == STR_LENGTH) {
-            System.out.println(result);
+            System.out.println(resultPrint);
         }
 
         checkStrikeOrBall(userPoint, ++idx);
     }
 
-    static int checkNothing(String digitStr) {
+    public int checkNothing(String userPointDigit) {
         int answer = 0;
 
-        if(!cStr.contains(digitStr)) {
+        if(!computerNumber.contains(userPointDigit)) {
             answer++;
         }
 
         return answer;
     }
 
-    static boolean substrUserPoint(String userPoint) {
-        boolean flag;
-        int answer = 0;
+    public boolean substrUserPoint(String userPoint) {
+        boolean strikeResult;
+        int nothing = 0;
         int idx = 0;
 
         while(idx < STR_LENGTH) {
             String dgt = Character.toString(userPoint.charAt(idx));
-            answer += checkNothing(dgt);
+            nothing += checkNothing(dgt);
             idx++;
         }
 
-        if(answer == 3) {
+        if(nothing == 3) {
             System.out.println(NOTHING_STR);
-            flag = false;
+            strikeResult = false;
         } else {
             checkStrikeOrBall(userPoint, 0);
-            flag = strikeFlag;
+            strikeResult = strikeFlag;
         }
-        return flag;
+        return strikeResult;
     }
 
-    static void startGame2() {
+    public void restartGame() {
         try {
-            System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
-            String numStr = readLine();
-
-            int number = Integer.parseInt(numStr);
-            if(number < 1 || number > 2) {
-                startGame2();
-            } else {
-                num = number;
-            }
-        } catch(IllegalArgumentException argumentException) {
-            startGame2();
-            argumentException.getStackTrace();
-        }
-    }
-
-    static boolean startGame(String line) {
-        boolean flag = false;
-
-        try {
-            if(Integer.parseInt(line) % 1 == 0 && line.length() == STR_LENGTH) {
-                flag = substrUserPoint(line);
+            int digit = Integer.parseInt(userAnswer);
+            if(digit >= 1 && digit <= 2) {
+                restartAnswer = digit;
             }
         } catch(IllegalArgumentException argumentException) {
             argumentException.getStackTrace();
         }
 
-        return flag;
-    }
-
-    static void showResult(String line) {
-        if(startGame(line)) {
-            System.out.println("3개의 숫자를 모두 맞히셨습니다! 게임 종료");
-            startGame2();
-        }
-    }
-
-    static boolean tellUser() {
-        boolean flag = true;
-        String line = "";
-
-        if(num == 1) {
-            computer = pickUniqueNumbersInRange(1,9, STR_LENGTH);
-            cStr = "";
+        if(restartAnswer == 1) {
             strikeFlag = false;
-            for(int i : computer) {
-                cStr += i;
+            computerDigitList = pickUniqueNumbersInRange(1, 9, STR_LENGTH);
+            computerNumber = "";
+            for(int i : computerDigitList) {
+                computerNumber += i;
             }
-            num = 0;
-        } else if(num == 2) {
-            flag = false;
+            restartAnswer = 0;
         }
+    }
 
-        if(num < 2) {
+    public boolean startGame() {
+        boolean gameEnd = false;
+
+        try {
+            if(Integer.parseInt(userAnswer) % 1 == 0 && userAnswer.length() == STR_LENGTH) {
+                gameEnd = substrUserPoint(userAnswer);
+            }
+        } catch(IllegalArgumentException argumentException) {
+            argumentException.getStackTrace();
+        }
+        return gameEnd;
+    }
+
+    public boolean tellUser() {
+        boolean restartFlag = true;
+
+        if(strikeFlag) {
+            System.out.println("3개의 숫자를 모두 맞히셨습니다! 게임 종료");
+            System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
+        } else {
             System.out.print("숫자를 입력해주세요 : ");
-            line = readLine();
-            showResult(line);
         }
 
-        return flag;
+        userAnswer = readLine();
+
+        if(strikeFlag) {
+            restartGame();
+        } else {
+            startGame();
+        }
+
+        if(restartAnswer == 2) {
+            restartFlag = false;
+        } else {
+            tellUser();
+        }
+
+        return restartFlag;
     }
 
     public static void main(String[] args) {
@@ -160,15 +159,16 @@ public class Application {
         Random 값 추출은 camp.nextstep.edu.missionutils.Randoms의 pickNumberInRange()를 활용한다.
         사용자가 입력하는 값은 camp.nextstep.edu.missionutils.Console의 readLine()을 활용한다.*/
 
-        boolean flag = true;
+        boolean restartFlag = true;
+        Application application = new Application();
 
-        computer = pickUniqueNumbersInRange(1,9, STR_LENGTH);
-        for(int i : computer) {
-            cStr += i;
+        computerDigitList = pickUniqueNumbersInRange(1, 9, STR_LENGTH);
+        for(int i : computerDigitList) {
+            application.computerNumber += i;
         }
 
-        while(flag) {
-            flag = tellUser();
+        while(restartFlag) {
+            restartFlag = application.tellUser();
         }
     }
 }
