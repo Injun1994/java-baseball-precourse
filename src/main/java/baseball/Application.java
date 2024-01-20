@@ -1,7 +1,5 @@
 package baseball;
 
-import org.junit.platform.commons.util.StringUtils;
-
 import java.util.List;
 
 import static camp.nextstep.edu.missionutils.Console.readLine;
@@ -31,6 +29,8 @@ public class Application {
             strike = 0;
             ball = 0;
         } else if(idx >= STR_LENGTH) {
+            strike = 0;
+            ball = 0;
             return;
         }
 
@@ -91,12 +91,32 @@ public class Application {
         return flag;
     }
 
+    static void startGame2() {
+        try {
+            System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
+            String numStr = readLine();
+
+            int number = Integer.parseInt(numStr);
+            if(number < 1 || number > 2) {
+                startGame2();
+            } else {
+                num = number;
+            }
+        } catch(IllegalArgumentException argumentException) {
+            startGame2();
+            argumentException.getStackTrace();
+        }
+    }
+
     static boolean startGame(String line) {
-        boolean flag;
-        if(!StringUtils.isBlank(line) && line.length() == STR_LENGTH) {
-            flag = substrUserPoint(line);
-        } else {
-            flag = false;
+        boolean flag = false;
+
+        try {
+            if(Integer.parseInt(line) % 1 == 0 && line.length() == STR_LENGTH) {
+                flag = substrUserPoint(line);
+            }
+        } catch(IllegalArgumentException argumentException) {
+            argumentException.getStackTrace();
         }
 
         return flag;
@@ -105,9 +125,7 @@ public class Application {
     static void showResult(String line) {
         if(startGame(line)) {
             System.out.println("3개의 숫자를 모두 맞히셨습니다! 게임 종료");
-            System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
-            String numStr = readLine();
-            num = Integer.parseInt(numStr);
+            startGame2();
         }
     }
 
@@ -127,7 +145,7 @@ public class Application {
             flag = false;
         }
 
-        if(num != 2) {
+        if(num < 2) {
             System.out.print("숫자를 입력해주세요 : ");
             line = readLine();
             showResult(line);
@@ -152,6 +170,5 @@ public class Application {
         while(flag) {
             flag = tellUser();
         }
-
     }
 }
