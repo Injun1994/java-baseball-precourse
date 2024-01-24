@@ -1,70 +1,86 @@
 package baseball;
 
-import java.util.List;
-
-import static camp.nextstep.edu.missionutils.Console.readLine;
-import static camp.nextstep.edu.missionutils.Randoms.pickUniqueNumbersInRange;
+import org.junit.platform.commons.util.StringUtils;
 
 public class Application {
-    public final static int STR_LENGTH = 3;
-    static List<Integer> computerDigitList;
-    static String computerNumber = "";
-    String userAnswer = "";
-    boolean strikeFlag = false;
-    boolean restartFlag = false;
-    int restartAnswer = 0;
+
+    protected final static int NUMBER_LENGTH = 3;
+    private boolean continueFlag = true;
+    private int replay = 0;
+    private String computerNumber = "";
 
 
-    public void tellUser() {
-        Game game = new Game();
+    public static void main(String[] args) {
+        //숫자 야구 게임 구현
+        Application application = new Application();
 
-        if(strikeFlag) {
-            System.out.println("3개의 숫자를 모두 맞히셨습니다! 게임 종료");
-            System.out.println("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요.");
-        } else {
-            System.out.print("숫자를 입력해주세요 : ");
-        }
-
-        userAnswer = readLine();
-
-        if(strikeFlag) {
-            restartAnswer = game.restartGame(userAnswer);
-            strikeFlag = false;
-        } else {
-            strikeFlag = game.startGame(userAnswer, computerNumber, computerDigitList, STR_LENGTH);
-        }
-
-        if(restartAnswer == 1) {
-            computerDigitList = pickUniqueNumbersInRange(1, 9, STR_LENGTH);
-            computerNumber = "";
-            for(int i : computerDigitList) {
-                computerNumber += i;
-            }
-            restartAnswer = 0;
-        }
-        if(restartAnswer == 2) {
-            restartFlag = false;
-        } else {
-            tellUser();
+        while (application.continueFlag) {
+            application.play();
         }
     }
 
-    public static void main(String[] args) {
-        //TODO: 숫자 야구 게임 구현
-   /*     camp.nextstep.edu.missionutils에서 제공하는 Randoms, Console API를 활용해 구현해야 한다.
-        Random 값 추출은 camp.nextstep.edu.missionutils.Randoms의 pickNumberInRange()를 활용한다.
-        사용자가 입력하는 값은 camp.nextstep.edu.missionutils.Console의 readLine()을 활용한다.*/
+    private void play() {
+        System.out.print(Print.TELL_USER_INPUT_NUMBER);
 
-        Application application = new Application();
-        application.restartFlag = true;
+        Computer computer = new Computer();
+        User user = new User();
 
-        computerDigitList = pickUniqueNumbersInRange(1, 9, STR_LENGTH);
-        for(int i : computerDigitList) {
-            computerNumber += i;
+        Point point;
+        int strike = 0;
+        int ball = 0;
+        boolean nothing;
+
+
+        if (replay == 0 && StringUtils.isBlank(computerNumber)) {
+            computerNumber = computer.getNumber();
+        }
+        if (replay == 1) {
+            computerNumber = computer.getNumber();
+            replay = 0;
         }
 
-        while(application.restartFlag) {
-            application.tellUser();
+        point = new Point(computerNumber, user.getInput(NUMBER_LENGTH));
+
+        nothing = point.checkNothing();
+        if (nothing) {
+            System.out.println(Print.NOTHING);
+            return;
         }
+
+        for (int i = 0; i < Application.NUMBER_LENGTH; i++) {
+            strike += point.checkStrike(i);
+            ball += point.checkBall(i);
+        }
+
+        if (ball == 0) {
+            System.out.println(strike + Print.STRIKE);
+        } else if (strike == 0) {
+            System.out.println(ball + Print.BALL);
+        } else {
+            System.out.println(strike + Print.STRIKE + " " + ball + Print.BALL);
+        }
+
+        if (strike == 3) {
+            replay = Integer.parseInt(askReplay());
+        }
+
+        if (replay == 2) {
+            continueFlag = false;
+        }
+    }
+
+    private String askReplay() {
+        System.out.println(Print.STRIKE_AND_FINISH_GAME);
+        System.out.println(Print.ASK_RESTART_OR_TERMINATE);
+
+        User user = new User();
+
+        String replay = user.getInput(1);
+
+        if (!"1".equals(replay) && !"2".equals(replay)) {
+            replay = askReplay();
+        }
+
+        return replay;
     }
 }
